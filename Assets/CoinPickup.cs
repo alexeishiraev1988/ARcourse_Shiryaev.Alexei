@@ -14,10 +14,10 @@ public class CoinPickup : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            audioSource.Play();
             Debug.Log("Монетка собрана!");
-
-            Destroy(gameObject, audioSource.clip.length);
+            GameManager.Instance.AddScore(1);
+            AudioSource.PlayClipAtPoint(audioSource.clip, transform.position);
+            Destroy(gameObject);
         }
     }
 }

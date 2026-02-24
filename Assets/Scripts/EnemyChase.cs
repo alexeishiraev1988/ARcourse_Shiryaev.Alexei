@@ -20,4 +20,13 @@ public class EnemyChase : MonoBehaviour
             agent.SetDestination(player.position);
         }
     }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Player"))
+        {
+            GameManager.Instance.GameOver();
+        }
+    }
+
 }
