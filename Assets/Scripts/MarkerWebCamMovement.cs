@@ -11,6 +11,7 @@ public class MarkerWebCamMovement : WebCamera
     [SerializeField] private bool _debug;
     [SerializeField] private Transform _debugTarget;
     [SerializeField] private int _targetMarker;
+    [SerializeField] private Vector3 _gameOffset = Vector3.zero;
 
 
     private WebCamTexture _webCamTexture;
@@ -83,8 +84,8 @@ public class MarkerWebCamMovement : WebCamera
             if (_ids[0] == _targetMarker && _corners[0].Length == 4)
             {
                 // Середина маркера
-                var newX = _corners[0][0].X + (_corners[0][1].X - _corners[0][0].X) / 2;
-                var newY = _corners[0][0].Y + (_corners[0][3].Y - _corners[0][0].Y) / 2;
+                var newX = (_corners[0][0].X + _corners[0][1].X + _corners[0][2].X + _corners[0][3].X) / 4;
+                var newY = (_corners[0][0].Y + _corners[0][1].Y + _corners[0][2].Y + _corners[0][3].Y) / 4;
                 var coords = GetWorldPositionFromTexturePixel(newX, image.Height - newY, image.Width, image.Height);
 
                 if (_debug)
@@ -121,26 +122,38 @@ public class MarkerWebCamMovement : WebCamera
                 // Преобразуем вращение в матрицу и quaternion
                 Mat rotMat = new Mat();
                 Cv2.Rodrigues(rvec, rotMat);
+                /*
+                                float scaleFactor = 1000f; // масштаб, чтобы объект был видим
+                                Vector3 position = new Vector3(
+                                    (float)tvec.At<double>(0),
+                                    -(float)tvec.At<double>(1),
+                                    (float)tvec.At<double>(2)
+                                ) * scaleFactor;
 
-                float scaleFactor = 1000f; // масштаб, чтобы объект был видим
-                Vector3 position = new Vector3(
-                    (float)tvec.At<double>(0),
-                    -(float)tvec.At<double>(1),
-                    (float)tvec.At<double>(2)
-                ) * scaleFactor;
+                                _gameRoot.position = position;
 
-                _gameRoot.position = position;
+                                Quaternion rotation = ConvertRotationMatrixToQuaternion(rotMat);
+
+                                // Устанавливаем позицию и вращение игры
+                                if (_gameRoot != null)
+                                {
+                                    _gameRoot.localPosition = position;
+                                    _gameRoot.localRotation = rotation;
+                                    _gameRoot.gameObject.SetActive(true);
+                                }
+                */
+
+
 
                 Quaternion rotation = ConvertRotationMatrixToQuaternion(rotMat);
 
-                // Устанавливаем позицию и вращение игры
                 if (_gameRoot != null)
                 {
-                    _gameRoot.localPosition = position;
-                    _gameRoot.localRotation = rotation;
+                    _gameRoot.position = coords + _gameOffset;
+                    // _gameRoot.rotation = rotation;
                     _gameRoot.gameObject.SetActive(true);
                 }
-            }
+            }  // закрывает if (_ids[0] == _targetMarker)
         }
         else
         {
@@ -162,7 +175,13 @@ public class MarkerWebCamMovement : WebCamera
             output = OpenCvSharp.Unity.MatToTexture(image);
 
         return true;
-    }
+    }  // закрывает ProcessTexture
+
+
+
+
+
+
     private Vector3 GetWorldPositionFromTexturePixel(float x, float y, float width, float height)
     {
         float uvX = x / width;
